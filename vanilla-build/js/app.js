@@ -171,25 +171,61 @@ function init() {
     const view = new View();
     const store = new Store(players);
 
-    console.log(store.game)
+    view.bindGameResetEvent((event) => {
+        view.closeAll();
 
-    view.bindGameResetEvent(event => {
-        console.log('reset event')
-        console.log(event)
+        store.reset();
+
+        view.clearMoves();
+        view.setTurnIndicator(store.game.currentPlayer);
+
+        view.updateScoreboard(
+          store.stats.playerWithStats[0].wins,
+          store.stats.playerWithStats[1].wins,
+          store.stats.ties,
+          );
+
     });
 
-    view.bindNewRoundEvent(event => {
-        console.log('new round')
-        console.log(event)
+    view.bindNewRoundEvent((event) => {
+        store.newRound();
+
+        view.closeAll();
+        view.clearMoves();
+        view.setTurnIndicator(store.game.currentPlayer);
+        view.updateScoreboard(
+          store.stats.playerWithStats[0].wins,
+          store.stats.playerWithStats[1].wins,
+          store.stats.ties,
+          );
     });
 
-    view.bindPlayerMoveEvent(event => {
-        const clickedSquare = event.target;
+    view.bindPlayerMoveEvent((square) => {
 
-        view.handlePlayerMove(clickedSquare, store.game.currentPlayer);
+        const existingMove = store.game.moves.find(
+          (move) => move.squareId === +square.id
+          )
 
-        store.playerMove(+clickedSquare.id);
+        if (existingMove) {
+          return
+        }
 
+        //place an icon of the current player 
+        view.handlePlayerMove(square, store.game.currentPlayer);
+
+        //advance to the next state by pushing a move to the moves array
+        store.playerMove(+square.id);
+
+        if (store.game.status.isComplete) {
+          view.opendModal(store.game.status.winner 
+          ? `${store.game.status.winner.name} wins !`
+          : `Tie !`
+          );
+
+          return;
+        }
+
+        //set the next player's turn indicator
         view.setTurnIndicator(store.game.currentPlayer);
     });
 
