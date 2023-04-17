@@ -1,5 +1,5 @@
-import View from '../dist/view.js'
-import Store from '..dist/store.js';
+import View from './view.js';
+import Store from './store.js';
 
 
 const players = [
